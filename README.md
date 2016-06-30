@@ -1,2 +1,3 @@
-# coursera-fpds
-Assignment solutions to Cousera course Functional Program Design in Scala
+# Functional Program Design in Scala
+
+My solutions for assignments in Coursera course [Functional Program Design in Scala](https://www.coursera.org/learn/progfun2)
