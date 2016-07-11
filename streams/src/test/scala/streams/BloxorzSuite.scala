@@ -76,4 +76,78 @@ class BloxorzSuite extends FunSuite {
     }
   }
 
+  test("neighborsWithHistory should correctly return all valid neighbouring blocks") {
+    new Level1 {
+      val block = Block(Pos(1, 1), Pos(1, 1))
+      val history = List(Left, Up)
+      val neighbors = Stream(
+        (Block(Pos(1, 2), Pos(1, 3)), List(Right, Left, Up)),
+        (Block(Pos(2, 1), Pos(3, 1)), List(Down, Left, Up)))
+      assert(neighborsWithHistory(block, history) == neighbors)
+    }
+  }
+
+  test("newNeighborsOnly should return neighbours that are not explored before") {
+    new Level1 {
+      val neighbors = Stream(
+        (Block(Pos(1, 2), Pos(1, 3)), List(Right, Left, Up)),
+        (Block(Pos(2, 1), Pos(3, 1)), List(Down, Left, Up)))
+      val explored = Set(Block(Pos(1, 2), Pos(1, 3)), Block(Pos(1, 1), Pos(1, 1)))
+      val newNeighbors = Stream((Block(Pos(2, 1), Pos(3, 1)), List(Down, Left, Up)))
+      assert(newNeighborsOnly(neighbors, explored) == newNeighbors)
+    }
+  }
+
+  test("find neighbours") {
+    new Level1 {
+      val actual = neighborsWithHistory(Block(Pos(1,1),Pos(1,1)), List(Left,Up)).toSet
+      val expected = Set(
+        (Block(Pos(1,2),Pos(1,3)), List(Right,Left,Up)),
+        (Block(Pos(2,1),Pos(3,1)), List(Down,Left,Up))
+      )
+      assert(actual === expected)
+    }
+  }
+  
+  test("Avoid loops") {
+    new Level1 {
+      val actual = newNeighborsOnly(
+        Set(
+          (Block(Pos(1,2),Pos(1,3)), List(Right,Left,Up)),
+          (Block(Pos(2,1),Pos(3,1)), List(Down,Left,Up))
+        ).toStream,
+
+        Set(Block(Pos(1,2),Pos(1,3)), Block(Pos(1,1),Pos(1,1)))
+      )
+
+      val expected = Set(
+                       (Block(Pos(2,1),Pos(3,1)), List(Down,Left,Up))
+                     ).toStream
+    }
+  }
+  
+  trait SmallLevel extends SolutionChecker {
+    val level = """oo---
+                  |ooSoo
+                  |oo-oo
+                  |---oo""".stripMargin
+  }
+
+  test("from start small") {
+    new SmallLevel {
+      val initial: Stream[(Block, List[Move])] = Stream((startBlock, List()))
+      val explored: Set[Block] = Set(startBlock)
+      val observedResult = from(initial, explored).toList
+      val expectedResult: List[(Block, List[Move])] = List(
+          (Block(Pos(1, 2), Pos(1, 2)), List()),
+          (Block(Pos(1, 0), Pos(1, 1)), List(Left)),
+          (Block(Pos(1, 3), Pos(1, 4)), List(Right)),
+          (Block(Pos(0, 0), Pos(0, 1)), List(Up,Left)),
+          (Block(Pos(2, 0), Pos(2, 1)), List(Down,Left)),
+          (Block(Pos(2, 3), Pos(2, 4)), List(Down,Right)),
+          (Block(Pos(3, 3), Pos(3, 4)), List(Down,Down,Right))
+      )
+      assert(observedResult == expectedResult)
+    }
+  }
 }
